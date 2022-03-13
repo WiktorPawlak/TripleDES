@@ -91,21 +91,24 @@ module crypt =
                     [ 13; 2; 8; 4; 6; 15; 11; 1; 10; 9; 3; 14; 5; 0; 12; 7; 1; 15; 13; 8; 10; 3; 7; 4; 12; 5; 6; 11; 0; 14; 9; 2; 7; 11; 4; 1; 9; 12; 14; 2; 0; 6; 10; 13; 15; 3; 5; 8; 2; 1; 14; 7; 4; 10; 8; 13; 15; 12; 9; 0; 3; 5; 6; 11 ]]
 
 
+    module permutations =
+        let E (bits:BitArray) = // separate from Permutation for no good reason
+            let ans = BitArray (Array.replicate 6 0uy) // 48 bits
+            for (old, loc) in (List.indexed tables.E) do
+                ans.Set(loc, (bits.Get old))
+            ans
+        
         
 
-    let E (bits:BitArray) = // separate from Permutation for no good reason
-        let ans = BitArray (Array.replicate 6 0uy) // 48 bits
-        for (old, loc) in (List.indexed tables.E) do
-            ans.Set(loc, (bits.Get old))
-        ans
+        let perm locations (bits:BitArray) =
+            let ans = BitArray bits
+            for (old, loc) in (List.indexed locations) do
+                ans.Set(loc, (bits.Get old))
+            ans
 
-    let Permutation locations (bits:BitArray) =
-        let ans = BitArray bits
-        for (old, loc) in (List.indexed locations) do
-            ans.Set(loc, (bits.Get old))
-        ans
-    let initialPermutation = Permutation tables.initial
-    let reversePermutation = Permutation tables.reverse
+        let initial = perm tables.initial
+        let reverse = perm tables.reverse
+        let P = perm tables.P
 
     let keySchedule (key:BitArray) n  =
         key
@@ -132,17 +135,17 @@ module crypt =
         arr
         |> Array.chunkBySize 6
         |> Array.map makeSAddress
-        |> Array.indexed
-        |> Array.map S
-        |> ConcatenateFourBitPieces
 
     
     let cipher (keyPart:BitArray) (bits:BitArray) = // the $f$ function
-        let parts = (E bits).Xor keyPart
+        let parts = (permutations.E bits).Xor keyPart
         let output = BitArray (Array.singleton 0)
-        let blocks = toSixBitAddresses parts
-        
-        BitArray bits // NSA: (╹◡╹)
+        parts
+        |> toSixBitAddresses
+        |> Array.indexed
+        |> Array.map S
+        |> ConcatenateFourBitPieces
+        // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L:BitArray), (R:BitArray)) =
         let L' = R
@@ -164,9 +167,9 @@ module crypt =
 
     let encryptBlock key block =
         block
-        |> initialPermutation
+        |> permutations.initial
         |> cryptBlock key
-        |> reversePermutation
+        |> permutations.reverse
         
 
 
