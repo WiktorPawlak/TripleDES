@@ -159,9 +159,10 @@ module crypt =
         
         
     let cryptBlock (key:BitArray) (block:BitArray)  =
-        let (L, R) = conv.split block
-        let (Lo, Ro) = (cryptIter key 1 (L, R))
-        conv.join(Lo, Ro)
+        block
+        |> conv.split 
+        |> cryptIter key 1 
+        |> conv.join
         
 
 
