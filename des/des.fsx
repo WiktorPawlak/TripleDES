@@ -66,7 +66,17 @@ module conv =
         let joined = Array.concat [l;r]
         BitArray joined
         
-
+    let ConcatenateFourBitPieces (arr:array<int>) =
+        let mutable acc = 0
+        for i in arr do
+            acc <- ((acc <<< 4) ||| i)        
+        BitArray (Array.singleton acc)
+        
+    let toSixBitPieces (bits:BitArray) =
+        let arr = (Array.replicate 48 false)
+        bits.CopyTo(arr, 0)
+        arr
+        |> Array.chunkBySize 6
 
 
 module crypt =
@@ -123,28 +133,17 @@ module crypt =
         i * 16 + j
         
     
-    let ConcatenateFourBitPieces (arr:array<int>) =
-        let mutable acc = 0
-        for i in arr do
-            acc <- ((acc <<< 4) ||| i)        
-        BitArray (Array.singleton acc)
-        
-    let toSixBitAddresses (bits:BitArray) =
-        let arr = (Array.replicate 48 false)
-        bits.CopyTo(arr, 0)
-        arr
-        |> Array.chunkBySize 6
-        |> Array.map makeSAddress
 
     
     let cipher (keyPart:BitArray) (bits:BitArray) = // the $f$ function
         let parts = (permutations.E bits).Xor keyPart
         let output = BitArray (Array.singleton 0)
         parts
-        |> toSixBitAddresses
+        |> conv.toSixBitPieces
+        |> Array.map makeSAddress
         |> Array.indexed
         |> Array.map S
-        |> ConcatenateFourBitPieces
+        |> conv.ConcatenateFourBitPieces
         // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L:BitArray), (R:BitArray)) =
