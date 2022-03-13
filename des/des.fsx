@@ -152,7 +152,7 @@ module crypt =
         let L' = R
         let keyPart = keySchedule key n
         let R' = (BitArray L).Xor (cipher keyPart R)
-        match n with
+        match n with // List.fold?
             |16 -> (L', R')
             |_ -> cryptIter key (n - 1) (L', R')
         
