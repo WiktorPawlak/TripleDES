@@ -145,7 +145,27 @@ module crypt =
     let keySchedule (key:BitArray) n  =
         key
     
+    let makeSAddress bits =
+        let unpacked = bits |> Array.map (fun b -> if b then 1 else 0)
+        let i = unpacked[0] * 2 + unpacked[5]
+        let j = unpacked[1] * 8 + unpacked[2] * 4 + unpacked[3] * 2 + unpacked[4]
+        i * 16 + j
+        
+
+        
+    let toSixBitAddresses (bits:BitArray) =
+        let arr = (Array.replicate 48 false)
+        bits.CopyTo(arr, 0)
+        arr
+        |> Array.chunkBySize 6
+        |> Array.map makeSAddress
+
+    
     let cipher (keyPart:BitArray) (bits:BitArray) = // the $f$ function
+        let parts = (E bits).Xor keyPart
+        let output = BitArray (Array.singleton 0)
+        let blocks = toSixBitAddresses parts
+        
         BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L:BitArray), (R:BitArray)) =
