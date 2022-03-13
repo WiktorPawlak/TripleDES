@@ -116,6 +116,12 @@ module crypt =
                 ans.Set(loc, (key.Get old))
             ans
        
+        let PC2 (key:BitArray) = // 7 -> 6 bytes
+            let ans = BitArray (Array.replicate 6 0uy) // 48 bits
+            for (old, loc) in (List.indexed tables.PC2) do
+                ans.Set(loc, (key.Get old))
+            ans
+
 
         let perm locations (bits:BitArray) =
             let ans = BitArray bits
@@ -127,8 +133,28 @@ module crypt =
         let reverse = perm tables.reverse
         let P = perm tables.P
 
-    let keySchedule (key:BitArray) n  =
-        key
+        let rec keyShift (input:BitArray) count =
+            // ABCD EFGH --> BCDA FGHE
+            let output = BitArray input
+            output.LeftShift(1) |> ignore // ¯\_(ツ)_/¯
+            let first = input.Get 0
+            let second = input.Get 28
+            output.Set(27,first)
+            output.Set(55,second)
+            match count with
+            | 1 -> output
+            | _ -> keyShift output (count - 1) 
+
+            
+    let expandKey key =
+        // key --> subkey lookup table
+        let reduced = permutations.PC1 key
+        List.scan permutations.keyShift reduced tables.shiftcount
+        |> List.map permutations.PC2
+
+    let keySchedule (key:list<BitArray>) n  =
+        key.Item n
+        
 
     let S (n, addr) =
         tables.Sraw[n][addr]
@@ -164,7 +190,7 @@ module crypt =
         
         
         
-    let cryptBlock (key:BitArray) (block:BitArray)  =
+    let cryptBlock key block  =
         block
         |> conv.split 
         |> cryptIter key 1 
@@ -173,9 +199,10 @@ module crypt =
 
 
     let encryptBlock key block =
+        let keyList = expandKey key
         block
         |> permutations.initial
-        |> cryptBlock key
+        |> cryptBlock keyList
         |> permutations.reverse
         
 
