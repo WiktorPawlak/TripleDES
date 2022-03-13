@@ -153,7 +153,7 @@ module crypt =
         let keyPart = keySchedule key n
         let R' = (BitArray L).Xor (cipher keyPart R)
         match n with // List.fold?
-            |16 -> (L', R')
+            |16 -> (R', L')
             |_ -> cryptIter key (n - 1) (L', R')
         
         
@@ -161,7 +161,7 @@ module crypt =
     let cryptBlock (key:BitArray) (block:BitArray)  =
         let (L, R) = conv.split block
         let (Lo, Ro) = (cryptIter key 1 (L, R))
-        conv.join(Ro, Lo)
+        conv.join(Lo, Ro)
         
 
 
