@@ -29,7 +29,7 @@ module crypt =
         let rec keyShift (input: BitArray) count =
             // ABCD EFGH --> BCDA FGHE
             let output = BitArray input
-            output.RightShift(1) |> ignore // ¯\_(ツ)_/¯
+            output.RightShift(1) |> ignore // w specyfikacji jest LShift, ale to kwestia końcówkowości
             let first = input.Get 0
             let second = input.Get 28
             output.Set(27, first)
