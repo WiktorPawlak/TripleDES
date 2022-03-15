@@ -106,26 +106,26 @@ module crypt =
     module permutations =
         let E (bits:BitArray) = // separate from perm for no good reason
             let ans = BitArray (Array.replicate 6 0uy) // 48 bits
-            for (old, loc) in (List.indexed tables.E) do
+            for (loc, old) in (List.indexed tables.E) do
                 ans.Set(loc, (bits.Get old))
             ans
         
         let PC1 (key:BitArray) = // 8 -> 7 bytes
             let ans = BitArray (Array.replicate 7 0uy) // 56 bits
-            for (old, loc) in (List.indexed tables.PC1) do
+            for (loc, old) in (List.indexed tables.PC1) do
                 ans.Set(loc, (key.Get old))
             ans
        
         let PC2 (key:BitArray) = // 7 -> 6 bytes
             let ans = BitArray (Array.replicate 6 0uy) // 48 bits
-            for (old, loc) in (List.indexed tables.PC2) do
+            for (loc, old) in (List.indexed tables.PC2) do
                 ans.Set(loc, (key.Get old))
             ans
 
 
         let perm locations (bits:BitArray) =
             let ans = BitArray bits
-            for (old, loc) in (List.indexed locations) do
+            for (loc, old) in (List.indexed locations) do
                 ans.Set(loc, (bits.Get old))
             ans
 
@@ -181,12 +181,13 @@ module crypt =
         // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L:BitArray), (R:BitArray)) =
+        printf "iteracja %i" n
         let L' = R
         let keyPart = keySchedule key n
         let R' = (BitArray L).Xor (cipher keyPart R)
         match n with // List.fold?
             |16 -> (R', L')
-            |_ -> cryptIter key (n - 1) (L', R')
+            |_ -> cryptIter key (n + 1) (L', R')
         
         
         
@@ -206,4 +207,23 @@ module crypt =
         |> permutations.reverse
         
 
+module debug =
 
+    let bools2hex bin =
+        bin
+        |> Array.map (fun i -> if i then 1 else 0)
+        |> Array.reduce (fun a b -> (a * 2) + b)
+        |> sprintf "%x"
+
+
+    let hex2bools str =
+        let num =
+            System.Int32.Parse(str, System.Globalization.NumberStyles.AllowHexSpecifier)
+        [| 3..-1..0 |]
+        |> Array.map (fun i -> (num >>> i) % 2 = 1)
+
+    
+    let toStr (bits:BitArray) =
+        let inter = (Array.replicate bits.Length false)
+        bits.CopyTo(inter, 0)
+        inter |> Array.chunkBySize 4 |> Array.map bools2hex
