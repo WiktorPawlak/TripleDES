@@ -1,4 +1,4 @@
-﻿module des
+module des
 
 open System.Collections
 
@@ -72,17 +72,21 @@ module crypt =
         row * 16 + column
 
 
-
-    let cipher (keyPart: BitArray) (bits: BitArray) = // the $f$ function
-        let parts = (permutations.E bits).Xor keyPart
-
-        parts
+    let applySBoxes bits =
+        bits
         |> conv.toSixBitPieces
         |> Array.map makeSAddress
         |> Array.indexed
         |> Array.map S
-        |> Array.rev // tutaj działa
+        |> Array.rev
         |> conv.ConcatenateFourBitPieces
+
+
+    let cipher keyPart bits = // the $f$ function
+        bits
+        |> permutations.E
+        |> (fun x -> x.Xor keyPart)
+        |> applySBoxes
         |> permutations.P
 
     let rec cryptIter key n ((L: BitArray), (R: BitArray)) =
