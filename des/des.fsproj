@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="des.fs" />
     <Compile Include="conv.fs" />
     <Compile Include="tables.fs" />
     <Compile Include="debug.fs" />
+    <Compile Include="des.fs" />
   </ItemGroup>
 
 </Project>

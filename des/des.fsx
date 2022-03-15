@@ -2,10 +2,11 @@
 
 open System.Collections
 
+#if INTERACTIVE
 #load "tables.fs"
 #load "conv.fs"
-#load "debug.fs"
-
+// #load "debug.fs"
+#endif
 
 module crypt =
 
@@ -112,7 +113,7 @@ module crypt =
         let L' = R
         let keyPart = keySchedule key n
         let R' = (BitArray L).Xor(cipher keyPart R)
-        printf "%s %s %s\n" (debug.toStr L') (debug.toStr R') (debug.toStr keyPart)
+        // printf "%s %s %s\n" (debug.toStr L') (debug.toStr R') (debug.toStr keyPart)
 
         match n with // List.fold?
         | 16 -> (R', L')
