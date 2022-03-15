@@ -6,7 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="des.fsx" />
+    <Compile Include="des.fs" />
+    <Compile Include="conv.fs" />
+    <Compile Include="tables.fs" />
+    <Compile Include="debug.fs" />
   </ItemGroup>
 
 </Project>
