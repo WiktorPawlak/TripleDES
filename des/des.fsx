@@ -77,11 +77,12 @@ module crypt =
 
 
     let S (n, addr) =
-        let table = tables.Sraw[n]
+        let table = tables.Sraw[0]
         table[addr]
 
     let makeSAddress bits =
         let unpacked = bits |> Array.map (fun b -> if b then 1 else 0)
+
         let i = unpacked[0] * 2 + unpacked[5]
 
         let j =
@@ -94,10 +95,19 @@ module crypt =
 
 
 
-
     let cipher (keyPart: BitArray) (bits: BitArray) = // the $f$ function
-        let parts = (permutations.E bits).Xor keyPart
-        let output = BitArray(Array.singleton 0)
+        //let parts = (permutations.E bits).Xor keyPart
+        let parts = debug.toBA "040000"
+
+        parts
+        |> conv.toSixBitPieces
+        |> Array.map makeSAddress
+        |> Array.indexed
+        |> Array.map S
+        |> Array.rev // tutaj działa
+        |> conv.ConcatenateFourBitPieces
+        |> debug.toStr
+        |> printfn "sboxstr: %s"
 
         parts
         |> conv.toSixBitPieces
@@ -109,11 +119,11 @@ module crypt =
     // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L: BitArray), (R: BitArray)) =
-        printf "iteracja %i:\t" n
+        printf "iteracja %i\t" n
         let L' = R
         let keyPart = keySchedule key n
-        printf "%s %s %s\n" (debug.toStr L) (debug.toStr R) (debug.toStr keyPart)
         let R' = (BitArray L).Xor(cipher keyPart R)
+        printf "%s %s %s\n" (debug.toStr L') (debug.toStr R') (debug.toStr keyPart)
 
         match n with // List.fold?
         | 16 -> (R', L')

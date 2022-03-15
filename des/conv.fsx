@@ -71,11 +71,18 @@ let join ((L: BitArray), (R: BitArray)) =
     let joined = Array.concat [ l; r ]
     BitArray joined
 
+let reverseNibble num =
+    [ 0..3 ]
+    |> List.map (fun i -> (num >>> i) % 2 = 1)
+    |> List.map (fun i -> if i then 1 else 0)
+    |> List.reduce (fun i o -> (i <<< 1) ||| o)
+
 let ConcatenateFourBitPieces (arr: array<int>) =
     let mutable acc = 0
 
     for i in arr do
-        acc <- ((acc <<< 4) ||| i)
+        let rev = reverseNibble i
+        acc <- ((acc <<< 4) ||| rev)
 
     BitArray(Array.singleton acc)
 
