@@ -77,7 +77,7 @@ module crypt =
 
 
     let S (n, addr) =
-        let table = tables.Sraw[0]
+        let table = tables.Sraw[n]
         table[addr]
 
     let makeSAddress bits =
@@ -96,8 +96,7 @@ module crypt =
 
 
     let cipher (keyPart: BitArray) (bits: BitArray) = // the $f$ function
-        //let parts = (permutations.E bits).Xor keyPart
-        let parts = debug.toBA "040000"
+        let parts = (permutations.E bits).Xor keyPart
 
         parts
         |> conv.toSixBitPieces
@@ -106,17 +105,7 @@ module crypt =
         |> Array.map S
         |> Array.rev // tutaj działa
         |> conv.ConcatenateFourBitPieces
-        |> debug.toStr
-        |> printfn "sboxstr: %s"
-
-        parts
-        |> conv.toSixBitPieces
-        |> Array.map makeSAddress
-        |> Array.indexed
-        |> Array.map S
-        |> conv.ConcatenateFourBitPieces
         |> permutations.P
-    // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L: BitArray), (R: BitArray)) =
         printf "iteracja %i\t" n
