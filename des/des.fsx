@@ -78,7 +78,6 @@ module crypt =
         |> Array.map makeSAddress
         |> Array.indexed
         |> Array.map S
-        |> Array.rev
         |> conv.ConcatenateFourBitPieces
 
 

@@ -80,7 +80,7 @@ let reverseNibble num =
 let ConcatenateFourBitPieces (arr: array<int>) =
     let mutable acc = 0
 
-    for i in arr do
+    for i in (Array.rev arr) do
         let rev = reverseNibble i
         acc <- ((acc <<< 4) ||| rev)
 
