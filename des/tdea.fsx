@@ -7,13 +7,13 @@ module tdea
 
 let encryptBlock (k1, k2, k3) block =
     block
-    |> des.encryptBlock k1
-    |> des.decryptBlock k2
-    |> des.encryptBlock k3
+    |> des.encrypt k1
+    |> des.decrypt k2
+    |> des.encrypt k3
 
 
 let decryptBlock (k1, k2, k3) block =
     block
-    |> des.decryptBlock k3
-    |> des.encryptBlock k2
-    |> des.decryptBlock k1
+    |> des.decrypt k3
+    |> des.encrypt k2
+    |> des.decrypt k1
