@@ -61,15 +61,15 @@ module crypt =
     let makeSAddress bits =
         let unpacked = bits |> Array.map (fun b -> if b then 1 else 0)
 
-        let i = unpacked[0] * 2 + unpacked[5]
+        let row = unpacked[0] * 2 + unpacked[5]
 
-        let j =
+        let column =
             unpacked[1] * 8
             + unpacked[2] * 4
             + unpacked[3] * 2
             + unpacked[4]
 
-        i * 16 + j
+        row * 16 + column
 
 
 
