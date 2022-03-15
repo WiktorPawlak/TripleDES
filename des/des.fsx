@@ -11,42 +11,20 @@ module crypt =
 
 
     module permutations =
-        let E (bits: BitArray) = // separate from perm for no good reason
-            let ans = BitArray(Array.replicate 6 0uy) // 48 bits
-
-            for (loc, old) in (List.indexed tables.E) do
-                ans.Set(loc, (bits.Get old))
-
-            ans
-
-        let PC1 (key: BitArray) = // 8 -> 7 bytes
-            let ans = BitArray(Array.replicate 7 0uy) // 56 bits
-
-            for (loc, old) in (List.indexed tables.PC1) do
-                ans.Set(loc, (key.Get old))
-
-            ans
-
-        let PC2 (key: BitArray) = // 7 -> 6 bytes
-            let ans = BitArray(Array.replicate 6 0uy) // 48 bits
-
-            for (loc, old) in (List.indexed tables.PC2) do
-                ans.Set(loc, (key.Get old))
-
-            ans
-
-
-        let perm locations (bits: BitArray) =
-            let ans = BitArray bits
+        let perm len locations (bits: BitArray) =
+            let ans = BitArray(Array.replicate len 0uy)
 
             for (loc, old) in (List.indexed locations) do
                 ans.Set(loc, (bits.Get old))
 
             ans
 
-        let initial = perm tables.initial
-        let reverse = perm tables.reverse
-        let P = perm tables.P
+        let initial = perm 8 tables.initial
+        let reverse = perm 8 tables.reverse
+        let P = perm 4 tables.P
+        let PC2 = perm 6 tables.PC2
+        let PC1 = perm 7 tables.PC1
+        let E = perm 6 tables.E
 
         let rec keyShift (input: BitArray) count =
             // ABCD EFGH --> BCDA FGHE
