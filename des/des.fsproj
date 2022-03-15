@@ -10,6 +10,7 @@
     <Compile Include="tables.fs" />
     <Compile Include="debug.fs" />
     <Compile Include="des.fs" />
+    <Compile Include="tdea.fs" />
   </ItemGroup>
 
 </Project>
