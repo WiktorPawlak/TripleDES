@@ -109,7 +109,8 @@ module crypt =
 
 
 
-    let encryptBlock key block = cryptBlock (expandKey key) block
+let encryptBlock key block =
+    crypt.cryptBlock (crypt.expandKey key) block
 
-    let decryptBlock key block =
-        cryptBlock (List.rev (expandKey key)) block
+let decryptBlock key block =
+    crypt.cryptBlock (List.rev (crypt.expandKey key)) block
