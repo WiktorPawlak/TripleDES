@@ -66,8 +66,12 @@ module crypt =
         // key --> subkey lookup table
         let reduced = permutations.PC1 key
 
-        List.scan permutations.keyShift reduced tables.shiftcount
-        |> List.map permutations.PC2
+        let items =
+            List.scan permutations.keyShift reduced tables.shiftcount
+            |> List.map permutations.PC2
+
+        items.Tail
+
 
     let keySchedule (key: list<BitArray>) n = key.Item(n - 1)
 
@@ -105,9 +109,10 @@ module crypt =
     // BitArray bits // NSA: (╹◡╹)
 
     let rec cryptIter key n ((L: BitArray), (R: BitArray)) =
-        printf "iteracja %i" n
+        printf "iteracja %i:\t" n
         let L' = R
         let keyPart = keySchedule key n
+        printf "%s %s %s\n" (debug.toStr L) (debug.toStr R) (debug.toStr keyPart)
         let R' = (BitArray L).Xor(cipher keyPart R)
 
         match n with // List.fold?
@@ -118,16 +123,15 @@ module crypt =
 
     let cryptBlock key block =
         block
+        |> permutations.initial
         |> conv.split
         |> cryptIter key 1
         |> conv.join
-
-
-
-    let encryptBlock key block =
-        let keyList = expandKey key
-
-        block
-        |> permutations.initial
-        |> cryptBlock keyList
         |> permutations.reverse
+
+
+
+    let encryptBlock key block = cryptBlock (expandKey key) block
+
+    let decryptBlock key block =
+        cryptBlock (List.rev (expandKey key)) block
