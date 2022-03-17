@@ -60,27 +60,30 @@ module sbox =
         let table = tables.Sproc[n]
         table[addr]
 
-    let makeAddr bits =
-        let unpacked = bits |> Array.map (fun b -> if b then 1 else 0)
+    let lookupBoxes (bits: BitArray) =
+        let bools = (Array.replicate 48 false)
+        bits.CopyTo(bools, 0)
+        let unpacked = bools |> Array.map (fun b -> if b then 1 else 0)
+        let mutable acc = 0
 
-        let row = unpacked[0] * 2 + unpacked[5]
+        for j = 7 downto 0 do
+            let o = j * 6
+            let row = unpacked[o + 0] * 2 + unpacked[o + 5]
 
-        let column =
-            unpacked[1] * 8
-            + unpacked[2] * 4
-            + unpacked[3] * 2
-            + unpacked[4]
+            let column =
+                unpacked[o + 1] * 8
+                + unpacked[o + 2] * 4
+                + unpacked[o + 3] * 2
+                + unpacked[o + 4]
 
-        row * 16 + column
+            let addr = row * 16 + column
+            let value = lookupBox (j, addr)
+            acc <- ((acc <<< 4) ||| value)
+
+        BitArray(Array.singleton acc)
 
 
-    let apply bits =
-        bits
-        |> conv.toSixBitPieces
-        |> Array.map makeAddr
-        |> Array.indexed
-        |> Array.map lookupBox
-        |> conv.ConcatenateFourBitPieces
+    let apply bits = bits |> lookupBoxes
 
 
 module rec crypt =

@@ -70,16 +70,3 @@ let join ((L: BitArray), (R: BitArray)) =
     R.CopyTo(r, 0)
     let joined = Array.concat [ l; r ]
     BitArray joined
-
-let ConcatenateFourBitPieces (arr: array<int>) =
-    let mutable acc = 0
-
-    for i in (Array.rev arr) do
-        acc <- ((acc <<< 4) ||| i)
-
-    BitArray(Array.singleton acc)
-
-let toSixBitPieces (bits: BitArray) =
-    let arr = (Array.replicate 48 false)
-    bits.CopyTo(arr, 0)
-    arr |> Array.chunkBySize 6
