@@ -29,6 +29,7 @@ let encrypt iv keys data =
     data
     |> conv.toBlocks
     |> Array.scan CBC iv
+    |> Array.tail
     |> conv.toBytes
 
 let decrypt iv keys data =
@@ -41,5 +42,6 @@ let decrypt iv keys data =
     data
     |> conv.toBlocks
     |> Array.scan CBC (iv, iv)
+    |> Array.tail
     |> Array.map snd
     |> conv.toBytes

@@ -37,3 +37,21 @@ let ``tdea działa`` () =
         |> toStr
 
     Assert.Equal(plaintext, after)
+
+
+[<Fact>]
+let ``CBC`` () =
+    let key1 = toBA "abb098376cd1ca2d"
+    let key2 = toBA "a1b27ab60c89dd3c"
+    let key3 = toBA "b0ba17a6298cd3cd"
+    let keys = (key1, key2, key3)
+    let plaintext = "i for one welcome our new cat overlords"
+
+    let after =
+        plaintext
+        |> System.Text.Encoding.UTF8.GetBytes
+        |> tdea.encrypt key1 keys
+        |> tdea.decrypt key1 keys
+        |> System.Text.Encoding.UTF8.GetString
+
+    Assert.Equal(plaintext, after)
