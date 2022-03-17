@@ -13,10 +13,11 @@ module permutations =
     let perm len locations (bits: BitArray) =
         let ans = BitArray(Array.replicate len 0uy)
 
-        for (loc, old) in (List.indexed locations) do
+        for (loc, old) in (Array.indexed locations) do
             ans.Set(loc, (bits.Get old))
 
         ans
+
 
     let initial = perm 8 tables.initial
     let reverse = perm 8 tables.reverse
