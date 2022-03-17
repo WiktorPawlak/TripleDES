@@ -20,28 +20,22 @@ let decryptBlock (k1, k2, k3) block =
     |> des.encrypt k2
     |> des.decrypt k1
 
-let encrypt iv keys data =
+let encrypt iv keys blocks =
 
     let CBC (previous: BitArray) plaintext =
         let xored = (BitArray previous).Xor plaintext
         encryptBlock keys xored
 
-    data
-    |> conv.toBlocks
-    |> Array.scan CBC iv
-    |> Array.tail
-    |> conv.toBytes
+    blocks |> Array.scan CBC iv |> Array.tail
 
-let decrypt iv keys data =
+let decrypt iv keys blocks =
 
     let CBC ((previous: BitArray), _) ciphertext =
         let decrypted = decryptBlock keys ciphertext
         let plaintext = (BitArray previous).Xor decrypted
         (ciphertext, plaintext)
 
-    data
-    |> conv.toBlocks
+    blocks
     |> Array.scan CBC (iv, iv)
     |> Array.tail
     |> Array.map snd
-    |> conv.toBytes

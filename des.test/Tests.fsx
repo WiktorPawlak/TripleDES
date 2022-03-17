@@ -50,8 +50,10 @@ let ``CBC`` () =
     let after =
         plaintext
         |> System.Text.Encoding.UTF8.GetBytes
+        |> conv.toBlocks
         |> tdea.encrypt key1 keys
         |> tdea.decrypt key1 keys
+        |> conv.toBytes
         |> System.Text.Encoding.UTF8.GetString
 
     Assert.Equal(plaintext, after)
