@@ -39,7 +39,7 @@ let timed name fn arg =
 
 [<EntryPoint>]
 let main _ =
-    let size = 100000
+    let size = 100000 // 100Kb
     printfn "%s" "kitty"
     let key1 = genKey ()
     let key2 = genKey ()

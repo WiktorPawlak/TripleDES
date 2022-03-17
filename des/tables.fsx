@@ -860,3 +860,11 @@ let Sraw =
         5
         6
         11 ] ]
+
+let reverseNibble num =
+    [ 0..3 ]
+    |> List.map (fun i -> (num >>> i) % 2 = 1)
+    |> List.map (fun i -> if i then 1 else 0)
+    |> List.reduce (fun i o -> (i <<< 1) ||| o)
+
+let Sproc = List.map (List.map reverseNibble) Sraw

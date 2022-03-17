@@ -56,7 +56,7 @@ module keys =
 
 module sbox =
     let lookupBox (n, addr) =
-        let table = tables.Sraw[n]
+        let table = tables.Sproc[n]
         table[addr]
 
     let makeAddr bits =
