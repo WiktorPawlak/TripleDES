@@ -10,21 +10,23 @@ open System.Collections
 
 
 module permutations =
-    let perm len locations (bits: BitArray) =
-        let ans = BitArray(Array.replicate len 0uy)
+    let perm input output locations (bits: BitArray) =
+        let ans = Array.replicate (output * 8) false
+        let cache = Array.replicate (input * 8) false
+        bits.CopyTo(cache, 0)
 
         for (loc, old) in (Array.indexed locations) do
-            ans.Set(loc, (bits.Get old))
+            Array.set ans loc (Array.get cache old)
 
-        ans
+        BitArray ans
 
 
-    let initial = perm 8 tables.initial
-    let reverse = perm 8 tables.reverse
-    let P = perm 4 tables.P
-    let PC2 = perm 6 tables.PC2
-    let PC1 = perm 7 tables.PC1
-    let E = perm 6 tables.E
+    let initial = perm 8 8 tables.initial
+    let reverse = perm 8 8 tables.reverse
+    let P = perm 4 4 tables.P
+    let PC2 = perm 7 6 tables.PC2
+    let PC1 = perm 8 7 tables.PC1
+    let E = perm 4 6 tables.E
 
 module keys =
     let schedule (key: list<BitArray>) n = key.Item(n - 1)
