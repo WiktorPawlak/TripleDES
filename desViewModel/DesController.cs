@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 
 namespace desViewModel
 {
@@ -20,7 +21,30 @@ namespace desViewModel
         public string? Result { get; set; } = "Result...";
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
+        public ICommand GenerateKey
+        {
+            get
+            {
+                return new RelayCommand<object>(
+                    (object o) =>
+                    {
+                        string generatedValue = (o as string) switch
+                        {
+                            "KEY1" => RunDiagnostics(),
+                            "KEY2" => StartSystem(),
+                            "KEY3" => StopSystem(),
+                            "INITV" => ResetToReady(),
+                            _ => throw new ArgumentException("Unknown comman parameter", nameof(o)),
+                        };
+                        OnPropertyChanged(nameof(Result));
+                    });
+            }
+        }
 
     }
 }
