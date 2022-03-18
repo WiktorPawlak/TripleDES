@@ -6,11 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="conv.fs" />
-    <Compile Include="tables.fs" />
-    <Compile Include="debug.fs" />
-    <Compile Include="des.fs" />
-    <Compile Include="tdea.fs" />
+    <Compile Include="conv.fsx" />
+    <Compile Include="tables.fsx" />
+    <Compile Include="debug.fsx" />
+    <Compile Include="des.fsx" />
+    <Compile Include="tdea.fsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
   </ItemGroup>
 
 </Project>
