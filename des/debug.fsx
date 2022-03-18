@@ -1,6 +1,7 @@
 module debug
 
 open System.Collections
+open System
 
 let bools2hex bin =
     bin
@@ -33,3 +34,15 @@ let toBA (str: string) =
         |> Array.collect hex2bools
 
     BitArray bools
+
+
+let rng = Random()
+
+let randomBytes n =
+    let bytes = Array.zeroCreate n
+    rng.NextBytes bytes
+    bytes
+
+let genKey () =
+    let bytes = randomBytes 8
+    BitArray bytes

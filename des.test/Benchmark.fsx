@@ -15,16 +15,6 @@ open System.Collections
 open System.Diagnostics
 
 
-let rng = Random()
-
-let randomBytes n =
-    let bytes = Array.zeroCreate n
-    rng.NextBytes bytes
-    bytes
-
-let genKey () =
-    let bytes = randomBytes 8
-    BitArray bytes
 
 let timed name fn arg =
     let timer = new Stopwatch()
