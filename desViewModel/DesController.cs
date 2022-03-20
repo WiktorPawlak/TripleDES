@@ -34,7 +34,7 @@ namespace desViewModel
                 return new RelayCommand<object>(
                     (object commandParam) =>
                     {
-                        string generatedKey = debug.toStr(debug.genKey());
+                        string generatedKey = GenerateKey();
                         switch (commandParam as string)
                         {
                             case "KEY1":
@@ -57,10 +57,10 @@ namespace desViewModel
                                 throw new ArgumentOutOfRangeException(nameof(commandParam),
                                     "Unknown command parameter - lookup unresolved!");
                         };
-                        OnPropertyChanged(nameof(Key1));
                     });
             }
         }
 
+        private static string GenerateKey() => debug.toStr(debug.genKey());
     }
 }
