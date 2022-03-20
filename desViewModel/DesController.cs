@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows;
+﻿using System.ComponentModel;
 using System.Windows.Input;
 
 namespace desViewModel
