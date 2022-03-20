@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -26,22 +27,37 @@ namespace desViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public ICommand GenerateKey
+        public ICommand GenerateKeyCommand
         {
             get
             {
                 return new RelayCommand<object>(
-                    (object o) =>
+                    (object commandParam) =>
                     {
-                        string generatedValue = (o as string) switch
+                        string generatedKey = debug.toStr(debug.genKey());
+                        switch (commandParam as string)
                         {
-                            "KEY1" => RunDiagnostics(),
-                            "KEY2" => StartSystem(),
-                            "KEY3" => StopSystem(),
-                            "INITV" => ResetToReady(),
-                            _ => throw new ArgumentException("Unknown comman parameter", nameof(o)),
+                            case "KEY1":
+                                Key1 = generatedKey;
+                                OnPropertyChanged(nameof(Key1));
+                                break;
+                            case "KEY2":
+                                Key2 = generatedKey;
+                                OnPropertyChanged(nameof(Key2));
+                                break;
+                            case "KEY3":
+                                Key3 = generatedKey;
+                                OnPropertyChanged(nameof(Key3));
+                                break;
+                            case "INITV":
+                                InitVector = generatedKey;
+                                OnPropertyChanged(nameof(InitVector));
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(commandParam),
+                                    "Unknown command parameter - lookup unresolved!");
                         };
-                        OnPropertyChanged(nameof(Result));
+                        OnPropertyChanged(nameof(Key1));
                     });
             }
         }

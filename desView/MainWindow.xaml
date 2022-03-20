@@ -13,26 +13,26 @@
         <DockPanel Margin="5" HorizontalAlignment="Center">
             <Label Margin="5" Content="Key 1"></Label>
             <TextBox Text="{Binding Key1, Mode=TwoWay}" Width="200" Height="20" Margin="10 10 10 10"></TextBox>
-            <Button Command="{Binding GenerateKey}" CommandParameter="KEY1"
+            <Button Command="{Binding GenerateKeyCommand}" CommandParameter="KEY1"
                     Width="50" Height="20" Content="Generuj"></Button>
         </DockPanel>
         <DockPanel Margin="5" HorizontalAlignment="Center">
             <Label Margin="5" Content="Key 2"></Label>
             <TextBox Text="{Binding Key2, Mode=TwoWay}" Width="200" Height="20" Margin="10 10 10 10"></TextBox>
-            <Button Command="{Binding GenerateKey}" CommandParameter="KEY2"
+            <Button Command="{Binding GenerateKeyCommand}" CommandParameter="KEY2"
                     Width="50" Height="20" Content="Generuj"></Button>
         </DockPanel>
         <DockPanel Margin="5" HorizontalAlignment="Center">
             <Label Margin="5" Content="Key 3"></Label>
             <TextBox Text="{Binding Key3, Mode=TwoWay}" Width="200" Height="20" Margin="10 10 10 10"></TextBox>
-            <Button Command="{Binding GenerateKey}" CommandParameter="KEY3" 
+            <Button Command="{Binding GenerateKeyCommand}" CommandParameter="KEY3" 
                     Width="50" Height="20" Content="Generuj"></Button>
         </DockPanel>
         <DockPanel Margin="-73 5 0 5" HorizontalAlignment="Center">
             <Label Margin="5" Content="Initialization Vector"></Label>
             <TextBox Text="{Binding InitVector, Mode=TwoWay}" Width="200" Height="20" Margin="10 10 10 10"></TextBox>
-            <Button Command="{Binding GenerateKey}" Width="50" CommandParameter="INITV"
-                    Height="20" Content="Generuj"></Button>
+            <Button Command="{Binding GenerateKeyCommand}" CommandParameter="INITV"
+                    Width="50" Height="20" Content="Generuj"></Button>
         </DockPanel>
         <StackPanel Margin="340 0 340 0">
             <Label FontWeight="Bold">Keying options:</Label>

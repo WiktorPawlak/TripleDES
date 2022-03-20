@@ -14,4 +14,8 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\des\des.fsproj" />
+  </ItemGroup>
+
 </Project>
