@@ -27,7 +27,7 @@ let toStr (bits: BitArray) =
     |> Array.map bools2hex
     |> Array.reduce (+)
 
-let toBA (str: string) =
+let toBitArray (str: string) =
     let bools =
         Seq.toArray str
         |> Array.map string

@@ -13,8 +13,8 @@ open Xunit
 
 [<Fact>]
 let ``des enc/dec test`` () =
-    let text = toBA "123456abcd132536"
-    let key = toBA "aabb09182736ccdd"
+    let text = toBitArray "123456abcd132536"
+    let key = toBitArray "aabb09182736ccdd"
     let expectedEncrypted = "c0b7a8d05f3a829c"
     let encrypted = des.encrypt key text
     let decrypted = des.decrypt key encrypted
@@ -23,15 +23,15 @@ let ``des enc/dec test`` () =
 
 [<Fact>]
 let ``tdea działa`` () =
-    let key1 = toBA "abb098376cd1ca2d"
-    let key2 = toBA "a1b27ab60c89dd3c"
-    let key3 = toBA "b0ba17a6298cd3cd"
+    let key1 = toBitArray "abb098376cd1ca2d"
+    let key2 = toBitArray "a1b27ab60c89dd3c"
+    let key3 = toBitArray "b0ba17a6298cd3cd"
     let keys = (key1, key2, key3)
     let plaintext = "c0b78d05af3a829c"
 
     let after =
         plaintext
-        |> toBA
+        |> toBitArray
         |> tdea.encryptBlock keys
         |> tdea.decryptBlock keys
         |> toStr
@@ -41,9 +41,9 @@ let ``tdea działa`` () =
 
 [<Fact>]
 let ``CBC`` () =
-    let key1 = toBA "abb098376cd1ca2d"
-    let key2 = toBA "a1b27ab60c89dd3c"
-    let key3 = toBA "b0ba17a6298cd3cd"
+    let key1 = toBitArray "abb098376cd1ca2d"
+    let key2 = toBitArray "a1b27ab60c89dd3c"
+    let key3 = toBitArray "b0ba17a6298cd3cd"
     let keys = (key1, key2, key3)
     let plaintext = "i for one welcome our new cat overlords"
 
