@@ -74,7 +74,7 @@ namespace desViewModel
                     },
                     CanExecute
                     );
-        }
+            }
         }
 
         public ICommand EncryptFileCommand
@@ -86,7 +86,7 @@ namespace desViewModel
                     {
                         byte[] inputStream = FileToByteArray(EncryptFileName);
                         BitArray[] convertedFile = RunSelectedMode(inputStream);
-                        ByteArrayToFile(ToBytes(convertedFile), commandParam as string);
+                        ByteArrayToFile(ToBytes(convertedFile), EncryptFileName);
                     },
                     CanExecute
                     );
@@ -144,9 +144,12 @@ namespace desViewModel
         }
         private static byte[] FileToByteArray(string filename)
         {
-            using (FileStream fs = new(filename, FileMode.Open, FileAccess.Read))
+            string workingDirectory = Environment.CurrentDirectory;
+            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filename);
+
+            using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
             {
-                byte[] bytes = File.ReadAllBytes(filename);
+                byte[] bytes = File.ReadAllBytes(path);
                 fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
                 fs.Close();
                 return bytes;
@@ -154,12 +157,14 @@ namespace desViewModel
         }
         private static void ByteArrayToFile(byte[] array, string filename)
         {
-            using (FileStream fs = new (filename, FileMode.Create, FileAccess.Write))
+            string workingDirectory = Environment.CurrentDirectory;
+            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, "enc_" + filename);
+            using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
             {
                 fs.Write(array, 0, array.Length);
             }
         }
-        private static bool ValidateInput(object param) 
+        private static bool ValidateInput(object param)
         {
             return true;
         }
