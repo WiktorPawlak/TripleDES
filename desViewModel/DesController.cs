@@ -20,8 +20,6 @@ namespace desViewModel
         public string? DecryptText { get; set; } = "text...";
         public string? Result { get; set; } = "Result...";
         public event PropertyChangedEventHandler? PropertyChanged;
-        private readonly Predicate<object> CanExecute = ValidateInput;
-
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -61,34 +59,46 @@ namespace desViewModel
             }
         }
 
-        public ICommand EncryptTextCommand
+        public ICommand CypherTextCommand
         {
             get
             {
                 return new RelayCommand<object>(
-                    (object commandParam) =>
+                    (object codingOption) =>
                     {
-                        byte[] inputText = Encoding.ASCII.GetBytes(EncryptText);
-                        Result = ToStr(RunSelectedMode(inputText));
+                        ValidateInput(codingOption);
+                        string inputString = EncryptText;
+                        if ((codingOption as string).StartsWith("DECRYPT"))
+                        {
+                            inputString = DecryptText;
+                        }
+                        byte[] inputText = Encoding.BigEndianUnicode.GetBytes(inputString);
+                        Result = ToStr(RunSelectedMode(inputText, codingOption as string));
                         OnPropertyChanged(nameof(Result));
-                    },
-                    CanExecute
+                    }
                     );
             }
         }
 
-        public ICommand EncryptFileCommand
+        public ICommand CypherFileCommand
         {
             get
             {
                 return new RelayCommand<object>(
-                    (object commandParam) =>
+                    (object codingOption) =>
                     {
-                        byte[] inputStream = FileToByteArray(EncryptFileName);
-                        BitArray[] convertedFile = RunSelectedMode(inputStream);
-                        ByteArrayToFile(ToBytes(convertedFile), EncryptFileName);
-                    },
-                    CanExecute
+                        ValidateInput(codingOption);
+                        string inputFilename = EncryptFileName;
+                        string filePrefix = "encrypted_";
+                        if ((codingOption as string).StartsWith("DECRYPT"))
+                        {
+                            inputFilename = DecryptFileName;
+                            filePrefix = "decrypted_";
+                        }
+                        byte[] inputStream = FileToByteArray(inputFilename);
+                        BitArray[] convertedFile = RunSelectedMode(inputStream, codingOption as string);
+                        ByteArrayToFile(ToBytes(convertedFile), inputFilename, filePrefix);
+                    }
                     );
             }
         }
@@ -97,7 +107,8 @@ namespace desViewModel
         private static BitArray ToBitArray(string text) => debug.toBitArray(text);
         private static byte[] ToBytes(BitArray[] bits) => conv.toBytes(bits);
         private static BitArray[] ToBlocks(byte[] bytes) => conv.toBlocks(bytes);
-        private static string ToStr(BitArray[] bits) => Encoding.Default.GetString(ToBytes(bits));
+        private static string ToStr(BitArray[] bits) => Encoding.BigEndianUnicode.GetString(ToBytes(bits));
+
         private string GetSelectedMode()
         {
             if (Mode1 == true)
@@ -113,7 +124,7 @@ namespace desViewModel
                 return "Mode3";
             }
         }
-        private BitArray[] RunSelectedMode(byte[] bytes)
+        private BitArray[] RunSelectedMode(byte[] bytes, string codingMode)
         {
             var initVector = ToBitArray(InitVector);
             var blocks = ToBlocks(bytes);
@@ -140,7 +151,14 @@ namespace desViewModel
                 _ => throw new ArgumentOutOfRangeException(GetSelectedMode(),
                   "Unknown mode!"),
             };
-            return tdea.encrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+            if (codingMode.StartsWith("ENCRYPT"))
+            {
+                return tdea.encrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+            }
+            else
+            {
+                return tdea.decrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+            }
         }
         private static byte[] FileToByteArray(string filename)
         {
@@ -155,17 +173,83 @@ namespace desViewModel
                 return bytes;
             }
         }
-        private static void ByteArrayToFile(byte[] array, string filename)
+        private static void ByteArrayToFile(byte[] array, string filename, string filePrefix)
         {
             string workingDirectory = Environment.CurrentDirectory;
-            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, "enc_" + filename);
+            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filePrefix + filename);
             using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
             {
                 fs.Write(array, 0, array.Length);
             }
         }
-        private static bool ValidateInput(object param)
+        private bool ValidateInput(object textBox)
         {
+            if (InitVector == null)
+            {
+                throw new ArgumentNullException(nameof(InitVector), "InitVector was null!");
+            }
+            switch (GetSelectedMode())
+            {
+                case "Mode1":
+                    if (Key1 == null | Key2 == null | Key3 == null)
+                    {
+                        throw new ArgumentNullException("One of the keys was null for KEYING MODE 1!");
+                    }
+                    break;
+                case "Mode2":
+                    if (Key1 == null | Key2 == null)
+                    {
+                        throw new ArgumentNullException("One of the keys was null for KEYING MODE 2!");
+                    }
+                    break;
+                case "Mode3":
+                    if (Key1 == null)
+                    {
+                        throw new ArgumentNullException("First key was null for KEYING MODE 3!");
+                    }
+                    break;
+            }
+
+            string workingDirectory = Environment.CurrentDirectory;
+
+            switch (textBox as string)
+            {
+                case "ENCRYPT FILE":
+                    if (string.IsNullOrEmpty(EncryptFileName))
+                    {
+                        throw new ArgumentNullException("File name for encryption was null!");
+                    }
+                    string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, EncryptFileName);
+                    if (!File.Exists(path))
+                    {
+                        throw new FileNotFoundException("File at specified path does not exits - " + path);
+                    }
+                    break;
+                case "DECRYPT FILE":
+                    if (string.IsNullOrEmpty(DecryptFileName))
+                    {
+                        throw new ArgumentNullException("File name for decryption was null!");
+                    }
+                    string path2 = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, DecryptFileName);
+                    if (!File.Exists(path2))
+                    {
+                        throw new FileNotFoundException("File at specified path does not exits - " + path2);
+                    }
+                    break;
+                case "ENCRYPT TEXT":
+                    if (string.IsNullOrEmpty(EncryptText))
+                    {
+                        throw new ArgumentNullException("Text for encryption was null!");
+                    }
+                    break;
+
+                case "DECRYPT TEXT":
+                    if (string.IsNullOrEmpty(DecryptText))
+                    {
+                        throw new ArgumentNullException("Text for decryption was null!");
+                    }
+                    break;
+            }
             return true;
         }
     }
