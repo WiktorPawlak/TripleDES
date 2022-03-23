@@ -2,46 +2,24 @@ module conv
 
 open System.Collections
 
-// !! damages input for performance !!
-let pad chunks =
-    let last = Array.last chunks
-    let size = Array.length last
-    let difference = 8 - size
 
-    if difference <> 0 then
-        let padding = Array.replicate difference (byte difference)
-        let padded = Array.append last padding
-        Array.set chunks ((Array.length chunks) - 1) padded
+let pad bytes =
+    let len = Array.length bytes
+    let pad = 7 - (len % 8)
+    let zeros = Array.replicate pad 0uy
+    let padding = Array.append zeros (Array.singleton (byte pad))
+    Array.append bytes padding
 
-    chunks
-
-// !! damages input for performance !!
-let unpad chunks =
-    let lastChunk = Array.last chunks
-    let lastByte = Array.last lastChunk
-    let padding = (int lastByte)
-    let contentLength = 8 - padding
-
-    if padding <= 7 then // maximum padding
-        let count =
-            [ contentLength + 1 .. chunks.Length ]
-            |> List.map (Array.get lastChunk)
-            |> List.forall (fun x -> x = lastByte)
-
-        if count then
-            let truncated = Array.take contentLength lastChunk
-            Array.set chunks ((Array.length chunks) - 1) truncated
-
-    chunks
-
-
-
+let unpad (bytes: byte []) =
+    let len = Array.length bytes
+    let last = (int (Array.last bytes))
+    bytes[0 .. len - last - 1]
 
 
 let toBlocks bytes =
     bytes
-    |> Array.chunkBySize 8 // 64 bits
     |> pad
+    |> Array.chunkBySize 8 // 64 bits
     |> Array.map BitArray // BitVector byłby szybszy, ale ma za małą pojemność
 
 let BitArrayToBytes (bits: BitArray) =
@@ -52,8 +30,8 @@ let BitArrayToBytes (bits: BitArray) =
 let toBytes blocks =
     blocks
     |> Array.map BitArrayToBytes
-    |> unpad
     |> Array.concat
+    |> unpad
 
 
 let split (block: BitArray) =
