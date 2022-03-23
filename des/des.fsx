@@ -8,6 +8,18 @@ open System.Collections
 #endif
 
 
+let memoize f =
+    let cache = System.Collections.Generic.Dictionary<_, _>()
+
+    fun c ->
+        let exist, value = cache.TryGetValue(c)
+
+        match exist with
+        | true -> value
+        | _ ->
+            let value = f c
+            cache.Add(c, value)
+            value
 
 module permutations =
     let perm len locations (bits: BitArray) =
@@ -52,6 +64,8 @@ module keys =
             |> List.map permutations.PC2
 
         items.Tail
+
+    let expd = memoize expand
 
 
 
@@ -111,7 +125,7 @@ module rec crypt =
         |> permutations.reverse
 
 
-let encrypt key block = crypt.crypt (keys.expand key) block
+let encrypt key block = crypt.crypt (keys.expd key) block
 
 let decrypt key block =
-    crypt.crypt (List.rev (keys.expand key)) block
+    crypt.crypt (List.rev (keys.expd key)) block
