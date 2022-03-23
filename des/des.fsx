@@ -22,21 +22,23 @@ let memoize f =
             value
 
 module permutations =
-    let perm len locations (bits: BitArray) =
-        let ans = BitArray(Array.replicate len 0uy)
+    let perm input output locations (bits: BitArray) =
+        let ans = Array.replicate (output * 8) false
+        let cache = Array.replicate (input * 8) false
+        bits.CopyTo(cache, 0)
 
         for (loc, old) in (Array.indexed locations) do
-            ans.Set(loc, (bits.Get old))
+            Array.set ans loc (Array.get cache old)
 
-        ans
+        BitArray ans
 
 
-    let initial = perm 8 tables.initial
-    let reverse = perm 8 tables.reverse
-    let P = perm 4 tables.P
-    let PC2 = perm 6 tables.PC2
-    let PC1 = perm 7 tables.PC1
-    let E = perm 6 tables.E
+    let initial = perm 8 8 tables.initial
+    let reverse = perm 8 8 tables.reverse
+    let P = perm 4 4 tables.P
+    let PC2 = perm 7 6 tables.PC2
+    let PC1 = perm 8 7 tables.PC1
+    let E = perm 4 6 tables.E
 
 module keys =
     let schedule (key: list<BitArray>) n = key.Item(n - 1)
@@ -74,27 +76,30 @@ module sbox =
         let table = tables.Sproc[n]
         table[addr]
 
-    let makeAddr bits =
-        let unpacked = bits |> Array.map (fun b -> if b then 1 else 0)
+    let lookupBoxes (bits: BitArray) =
+        let bools = (Array.replicate 48 false)
+        bits.CopyTo(bools, 0)
+        let unpacked = bools |> Array.map (fun b -> if b then 1 else 0)
+        let mutable acc = 0
 
-        let row = unpacked[0] * 2 + unpacked[5]
+        for j = 7 downto 0 do
+            let o = j * 6
+            let row = unpacked[o + 0] * 2 + unpacked[o + 5]
 
-        let column =
-            unpacked[1] * 8
-            + unpacked[2] * 4
-            + unpacked[3] * 2
-            + unpacked[4]
+            let column =
+                unpacked[o + 1] * 8
+                + unpacked[o + 2] * 4
+                + unpacked[o + 3] * 2
+                + unpacked[o + 4]
 
-        row * 16 + column
+            let addr = row * 16 + column
+            let value = lookupBox (j, addr)
+            acc <- ((acc <<< 4) ||| value)
+
+        BitArray(Array.singleton acc)
 
 
-    let apply bits =
-        bits
-        |> conv.toSixBitPieces
-        |> Array.map makeAddr
-        |> Array.indexed
-        |> Array.map lookupBox
-        |> conv.ConcatenateFourBitPieces
+    let apply bits = bits |> lookupBoxes
 
 
 module rec crypt =
