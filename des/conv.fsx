@@ -13,7 +13,7 @@ let pad bytes =
 let unpad (bytes: byte []) =
     let len = Array.length bytes
     let last = (int (Array.last bytes))
-    bytes[0 .. len - last - 1]
+    bytes[0 .. len - last - 2]
 
 
 let toBlocks bytes =
