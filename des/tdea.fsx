@@ -39,3 +39,24 @@ let decrypt iv keys blocks =
     |> Array.scan CBC (iv, iv)
     |> Array.tail
     |> Array.map snd
+
+let cryptBytes crypt iv keys bytes =
+    bytes
+    |> conv.toBlocks
+    |> crypt iv keys
+    |> conv.toBytes
+
+let encryptBytes = cryptBytes encrypt
+let decryptBytes = cryptBytes decrypt
+
+let encryptString iv keys (string: string) =
+    string
+    |> System.Text.Encoding.UTF8.GetBytes
+    |> encryptBytes iv keys
+    |> System.Convert.ToBase64String
+
+let decryptString iv keys (string: string) =
+    string
+    |> System.Convert.FromBase64String
+    |> encryptBytes iv keys
+    |> System.Text.Encoding.UTF8.GetString
