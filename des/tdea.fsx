@@ -50,10 +50,12 @@ let encryptBytes = cryptBytes encrypt
 let decryptBytes = cryptBytes decrypt
 
 let encryptString iv keys (string: string) =
-    string
-    |> System.Text.Encoding.UTF8.GetBytes
-    |> encryptBytes iv keys
-    |> System.Convert.ToBase64String
+    let result =
+        string
+        |> System.Text.Encoding.UTF8.GetBytes
+        |> encryptBytes iv keys
+        |> System.Convert.ToBase64String
+    result
 
 let decryptString iv keys (string: string) =
     string

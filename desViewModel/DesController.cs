@@ -7,6 +7,7 @@ namespace desViewModel
 {
     public class DesController : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
         public string Key1 { get; set; }
         public string? Key2 { get; set; }
         public string? Key3 { get; set; }
@@ -19,7 +20,7 @@ namespace desViewModel
         public string? EncryptText { get; set; } = "text...";
         public string? DecryptText { get; set; } = "text...";
         public string? Result { get; set; } = "Result...";
-        public event PropertyChangedEventHandler? PropertyChanged;
+        private BitArray[]? fileResult = null;
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -63,18 +64,17 @@ namespace desViewModel
         {
             get
             {
-                return new RelayCommand<object>(
-                    (object codingOption) =>
+                return new RelayCommand<string>(
+                    (string codingOption) =>
                     {
                         ValidateInput(codingOption);
                         string inputString = EncryptText;
-                        if ((codingOption as string).StartsWith("DECRYPT"))
+                        if (codingOption.StartsWith("DECRYPT"))
                         {
                             inputString = DecryptText;
                         }
-                        byte[] inputText = Encoding.BigEndianUnicode.GetBytes(inputString);
-                        Result = ToStr(RunSelectedMode(inputText, codingOption as string));
-                        OnPropertyChanged(nameof(Result));
+                        //byte[] inputText = Encoding.BigEndianUnicode.GetBytes(inputString);
+                        RunSelectedMode(mode: codingOption, inputText: inputString);
                     }
                     );
             }
@@ -84,20 +84,20 @@ namespace desViewModel
         {
             get
             {
-                return new RelayCommand<object>(
-                    (object codingOption) =>
+                return new RelayCommand<string>(
+                    (string codingOption) =>
                     {
                         ValidateInput(codingOption);
                         string inputFilename = EncryptFileName;
-                        string filePrefix = "encrypted_";
-                        if ((codingOption as string).StartsWith("DECRYPT"))
+                        string filePrefix = "enc_";
+                        if (codingOption.StartsWith("DECRYPT"))
                         {
                             inputFilename = DecryptFileName;
-                            filePrefix = "decrypted_";
+                            filePrefix = "dec_";
                         }
                         byte[] inputStream = FileToByteArray(inputFilename);
-                        BitArray[] convertedFile = RunSelectedMode(inputStream, codingOption as string);
-                        ByteArrayToFile(ToBytes(convertedFile), inputFilename, filePrefix);
+                        RunSelectedMode(mode: codingOption, bytes: inputStream);
+                        ByteArrayToFile(ToBytes(fileResult), inputFilename, filePrefix);
                     }
                     );
             }
@@ -107,7 +107,7 @@ namespace desViewModel
         private static BitArray ToBitArray(string text) => debug.toBitArray(text);
         private static byte[] ToBytes(BitArray[] bits) => conv.toBytes(bits);
         private static BitArray[] ToBlocks(byte[] bytes) => conv.toBlocks(bytes);
-        private static string ToStr(BitArray[] bits) => Encoding.BigEndianUnicode.GetString(ToBytes(bits));
+        //private static string ToStr(BitArray[] bits) => Encoding.BigEndianUnicode.GetString(ToBytes(bits));
 
         private string GetSelectedMode()
         {
@@ -124,10 +124,9 @@ namespace desViewModel
                 return "Mode3";
             }
         }
-        private BitArray[] RunSelectedMode(byte[] bytes, string codingMode)
+        private void RunSelectedMode(string mode, byte[]? bytes = null, string? inputText = null)
         {
             var initVector = ToBitArray(InitVector);
-            var blocks = ToBlocks(bytes);
             var keys = GetSelectedMode() switch
             {
                 "Mode1" => Tuple.Create
@@ -151,13 +150,30 @@ namespace desViewModel
                 _ => throw new ArgumentOutOfRangeException(GetSelectedMode(),
                   "Unknown mode!"),
             };
-            if (codingMode.StartsWith("ENCRYPT"))
+            if (bytes == null)
             {
-                return tdea.encrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                if (mode.StartsWith("ENCRYPT"))
+                {
+                    Result = tdea.encryptString(initVector, keys.Item1, keys.Item2, keys.Item3, inputText);
+                }
+                else
+                {
+                    Result = tdea.decryptString(initVector, keys.Item1, keys.Item2, keys.Item3, inputText);
+                }
+                OnPropertyChanged(nameof(Result));
             }
             else
             {
-                return tdea.decrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                var blocks = ToBlocks(bytes);
+                if (mode.StartsWith("ENCRYPT"))
+                {
+                    fileResult = tdea.encrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                }
+                else
+                {
+                    fileResult = tdea.decrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                }
+                OnPropertyChanged(nameof(Result));
             }
         }
         private static byte[] FileToByteArray(string filename)
@@ -165,22 +181,23 @@ namespace desViewModel
             string workingDirectory = Environment.CurrentDirectory;
             string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filename);
 
-            using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
-            {
-                byte[] bytes = File.ReadAllBytes(path);
-                fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
-                fs.Close();
-                return bytes;
-            }
+            //using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
+            // {
+            byte[] bytes = File.ReadAllBytes(path);
+            //    fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
+            //    fs.Close();
+            return bytes;
+            //}
         }
         private static void ByteArrayToFile(byte[] array, string filename, string filePrefix)
         {
             string workingDirectory = Environment.CurrentDirectory;
             string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filePrefix + filename);
-            using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
-            {
-                fs.Write(array, 0, array.Length);
-            }
+            File.WriteAllBytes(path, array);
+            //using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
+            //{
+            //    fs.Write(array, 0, array.Length);
+            //}
         }
         private bool ValidateInput(object textBox)
         {
