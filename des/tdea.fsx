@@ -1,8 +1,8 @@
 module tdea
 
 #if INTERACTIVE
-#load "des.fs"
-#load "conv.fs"
+#load "des.fsx"
+#load "conv.fsx"
 #endif
 
 open System.Collections
@@ -40,23 +40,28 @@ let decrypt iv keys blocks =
     |> Array.tail
     |> Array.map snd
 
-let cryptBytes crypt iv keys bytes =
+let encryptBytes iv keys bytes =
     bytes
+    |> conv.pad
     |> conv.toBlocks
-    |> crypt iv keys
+    |> encrypt iv keys
     |> conv.toBytes
 
-let encryptBytes = cryptBytes encrypt
-let decryptBytes = cryptBytes decrypt
+let decryptBytes iv keys bytes =
+    bytes
+    |> conv.toBlocks
+    |> decrypt iv keys
+    |> conv.toBytes
+    |> conv.unpad
 
-let encryptString iv keys (string: string) =
-    string
+let encryptString iv keys (plaintext: string) =
+    plaintext
     |> System.Text.Encoding.UTF8.GetBytes
     |> encryptBytes iv keys
     |> System.Convert.ToBase64String
 
-let decryptString iv keys (string: string) =
-    string
+let decryptString iv keys (ciphertext: string) =
+    ciphertext
     |> System.Convert.FromBase64String
-    |> encryptBytes iv keys
+    |> decryptBytes iv keys
     |> System.Text.Encoding.UTF8.GetString

@@ -42,10 +42,8 @@ let main _ =
 
     let ans =
         pt
-        |> timed "splitting" conv.toBlocks
-        |> timed "encrypting" (tdea.encrypt iv keys)
-        |> timed "decrypting" (tdea.decrypt iv keys)
-        |> timed "joining" conv.toBytes
+        |> timed "encrypting" (tdea.encryptBytes iv keys)
+        |> timed "decrypting" (tdea.decryptBytes iv keys)
 
     assert (ans = pt)
 
