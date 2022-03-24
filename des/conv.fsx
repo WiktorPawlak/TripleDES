@@ -16,9 +16,8 @@ let unpad (bytes: byte []) =
     bytes[0 .. len - last - 2]
 
 
-let toBlocks bytes =
+let toBlocks (bytes: byte []) =
     bytes
-    |> pad
     |> Array.chunkBySize 8 // 64 bits
     |> Array.map BitArray // BitVector byłby szybszy, ale ma za małą pojemność
 
@@ -31,7 +30,6 @@ let toBytes blocks =
     blocks
     |> Array.map BitArrayToBytes
     |> Array.concat
-    |> unpad
 
 
 let split (block: BitArray) =
