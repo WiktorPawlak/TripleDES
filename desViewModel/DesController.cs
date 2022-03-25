@@ -20,7 +20,7 @@ namespace desViewModel
         public string? EncryptText { get; set; } = "text...";
         public string? DecryptText { get; set; } = "text...";
         public string? Result { get; set; } = "Result...";
-        private BitArray[]? fileResult = null;
+        private byte[]? fileResult = null;
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -97,7 +97,7 @@ namespace desViewModel
                         }
                         byte[] inputStream = FileToByteArray(inputFilename);
                         RunSelectedMode(mode: codingOption, bytes: inputStream);
-                        ByteArrayToFile(ToBytes(fileResult), inputFilename, filePrefix);
+                        ByteArrayToFile(fileResult, inputFilename, filePrefix);
                     }
                     );
             }
@@ -167,11 +167,11 @@ namespace desViewModel
                 var blocks = ToBlocks(bytes);
                 if (mode.StartsWith("ENCRYPT"))
                 {
-                    fileResult = tdea.encrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                    fileResult = tdea.encryptBytes(initVector, keys.Item1, keys.Item2, keys.Item3, bytes);
                 }
                 else
                 {
-                    fileResult = tdea.decrypt(initVector, keys.Item1, keys.Item2, keys.Item3, blocks);
+                    fileResult = tdea.decryptBytes(initVector, keys.Item1, keys.Item2, keys.Item3, bytes);
                 }
                 OnPropertyChanged(nameof(Result));
             }

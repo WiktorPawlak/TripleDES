@@ -54,8 +54,8 @@ let decryptBytes iv keys bytes =
     |> conv.toBytes
     |> conv.unpad
 
-let encryptString iv keys (string: string) =
-    string
+let encryptString iv keys (plaintext: string) =
+    plaintext
     |> System.Text.Encoding.UTF8.GetBytes
     |> encryptBytes iv keys
     |> System.Convert.ToBase64String
