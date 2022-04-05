@@ -864,7 +864,7 @@ let Sraw =
 let reverseNibble num =
     [ 0..3 ]
     |> List.map (fun i -> (num >>> i) % 2 = 1)
-    |> List.map (fun i -> if i then 1 else 0)
+    |> List.map System.Convert.ToInt32
     |> List.reduce (fun i o -> (i <<< 1) ||| o)
 
 let Sproc =

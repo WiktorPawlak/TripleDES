@@ -65,7 +65,7 @@ module sbox =
     let lookupBoxes (bits: BitArray) =
         let bools = (Array.replicate 48 false)
         bits.CopyTo(bools, 0)
-        let unpacked = bools |> Array.map (fun b -> if b then 1 else 0)
+        let unpacked = bools |> Array.map System.Convert.ToInt32
         let mutable acc = 0
 
         for j = 7 downto 0 do

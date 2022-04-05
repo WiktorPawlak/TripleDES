@@ -3,9 +3,9 @@ module debug
 open System.Collections
 open System
 
-let bools2hex bin =
+let bools2hex (bin: bool []) =
     bin
-    |> Array.map (fun i -> if i then 1 else 0)
+    |> Array.map System.Convert.ToInt32
     |> Array.reduce (fun a b -> (a * 2) + b)
     |> sprintf "%x"
 
