@@ -9,6 +9,7 @@
     <Compile Include="conv.fsx" />
     <Compile Include="tables.fsx" />
     <Compile Include="debug.fsx" />
+    <Compile Include="utils.fsx" />
     <Compile Include="des.fsx" />
     <Compile Include="tdea.fsx" />
   </ItemGroup>

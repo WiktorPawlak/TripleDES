@@ -3,23 +3,10 @@ module des
 open System.Collections
 
 #if INTERACTIVE
-#load "tables.fs"
-#load "conv.fs"
+#load "tables.fsx"
+#load "conv.fsx"
+#load "utils.fsx"
 #endif
-
-
-let memoize f =
-    let cache = System.Collections.Generic.Dictionary<_, _>()
-
-    fun c ->
-        let exist, value = cache.TryGetValue(c)
-
-        match exist with
-        | true -> value
-        | _ ->
-            let value = f c
-            cache.Add(c, value)
-            value
 
 module permutations =
     let perm input output locations (bits: BitArray) =
@@ -67,7 +54,7 @@ module keys =
 
         items.Tail
 
-    let expd = memoize expand
+    let expd = utils.memoize expand
 
 
 
