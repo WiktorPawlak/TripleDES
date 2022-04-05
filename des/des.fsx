@@ -10,22 +10,28 @@ open System.Collections
 
 module permutations =
     let perm input output locations (bits: BitArray) =
-        let ans = Array.replicate (output * 8) false
-        let cache = Array.replicate (input * 8) false
-        bits.CopyTo(cache, 0)
+        // używanie tablicy booli jako struktury pośredniej jest szybsze
+        // niż natywne funkcje BitArray, BitArray to ogólnie była pomyłka,
+        // co prawda mała, ale tragiczna szybkość
+        let intermediary = Array.replicate input false
+        bits.CopyTo(intermediary, 0)
 
-        for (loc, old) in (Array.indexed locations) do
-            Array.set ans loc (Array.get cache old)
+        let ans = Array.replicate output false
+
+        for loc in 0 .. output - 1 do
+            let index = (Array.get locations loc)
+            let value = (Array.get intermediary index)
+            Array.set ans loc value
 
         BitArray ans
 
 
-    let initial = perm 8 8 tables.initial
-    let reverse = perm 8 8 tables.reverse
-    let P = perm 4 4 tables.P
-    let PC2 = perm 7 6 tables.PC2
-    let PC1 = perm 8 7 tables.PC1
-    let E = perm 4 6 tables.E
+    let initial = perm 64 64 tables.initial
+    let reverse = perm 64 64 tables.reverse
+    let P = perm 32 32 tables.P
+    let PC2 = perm 56 48 tables.PC2
+    let PC1 = perm 64 56 tables.PC1
+    let E = perm 32 48 tables.E
 
 module keys =
     let schedule (key: list<BitArray>) n = key.Item(n - 1)
