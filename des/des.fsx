@@ -9,32 +9,25 @@ open System.Collections
 #endif
 
 module permutations =
-    let perm input output locations (bits: BitArray) =
-        // używanie tablicy booli jako struktury pośredniej jest szybsze
-        // niż natywne funkcje BitArray, BitArray to ogólnie była pomyłka,
-        // co prawda mała, ale tragiczna szybkość
-        let intermediary = Array.replicate input false
-        bits.CopyTo(intermediary, 0)
+    let perm length locations (bits: BitArray) =
+        let ans = Array.replicate length false
 
-        let ans = Array.replicate output false
-
-        for loc in 0 .. output - 1 do
+        for loc in 0 .. length - 1 do
             let index = (Array.get locations loc)
-            let value = (Array.get intermediary index)
-            Array.set ans loc value
+            let value = (bits.Get index)
+            ans[loc] <- value
 
         BitArray ans
 
-
-    let initial = perm 64 64 tables.initial
-    let reverse = perm 64 64 tables.reverse
-    let P = perm 32 32 tables.P
-    let PC2 = perm 56 48 tables.PC2
-    let PC1 = perm 64 56 tables.PC1
-    let E = perm 32 48 tables.E
+    let initial = perm 64 tables.initial
+    let reverse = perm 64 tables.reverse
+    let P = perm 32 tables.P
+    let PC2 = perm 48 tables.PC2
+    let PC1 = perm 56 tables.PC1
+    let E = perm 48 tables.E
 
 module keys =
-    let schedule (key: list<BitArray>) n = key.Item(n - 1)
+    let schedule (key: array<BitArray>) n = key[n - 1]
 
     let rec shift (input: BitArray) count =
         // ABCD EFGH --> BCDA FGHE
@@ -58,7 +51,7 @@ module keys =
             List.scan shift reduced tables.shiftcount
             |> List.map permutations.PC2
 
-        items.Tail
+        items.Tail |> Array.ofList
 
     let expd = utils.memoize expand
 
@@ -96,17 +89,19 @@ module sbox =
 
 
 module rec crypt =
+    let xor a (b: BitArray) = b.Xor a // destroys b
+
     let cipher keyPart bits = // the $f$ function
         bits
         |> permutations.E
-        |> (fun x -> x.Xor keyPart)
+        |> xor keyPart
         |> sbox.apply
         |> permutations.P
 
-    let rec iter key n ((L: BitArray), (R: BitArray)) =
+    let rec iter key n (L, R) =
         let L' = R
         let keyPart = keys.schedule key n
-        let R' = (BitArray L).Xor(cipher keyPart R)
+        let R' = xor L (cipher keyPart R)
 
         match n with // List.fold?
         | 16 -> (R', L')
@@ -126,4 +121,4 @@ module rec crypt =
 let encrypt key block = crypt.crypt (keys.expd key) block
 
 let decrypt key block =
-    crypt.crypt (List.rev (keys.expd key)) block
+    crypt.crypt (Array.rev (keys.expd key)) block
