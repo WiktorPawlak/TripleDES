@@ -7,6 +7,11 @@ module tdea
 
 open System.Collections
 
+/// wrapper, ponieważ `.Xor` "niszczy" wejście
+let xor (a: BitArray) b =
+    let copy = BitArray a
+    copy.Xor b
+
 let encryptBlock (k1, k2, k3) block =
     block
     |> des.encrypt k1
@@ -23,7 +28,7 @@ let decryptBlock (k1, k2, k3) block =
 let encrypt iv keys blocks =
 
     let CBC (previous: BitArray) plaintext =
-        let xored = (BitArray previous).Xor plaintext
+        let xored = xor previous plaintext
         encryptBlock keys xored
 
     blocks |> Array.scan CBC iv |> Array.tail
@@ -32,7 +37,7 @@ let decrypt iv keys blocks =
 
     let CBC ((previous: BitArray), _) ciphertext =
         let decrypted = decryptBlock keys ciphertext
-        let plaintext = (BitArray previous).Xor decrypted
+        let plaintext = xor previous decrypted
         (ciphertext, plaintext)
 
     blocks
