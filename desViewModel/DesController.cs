@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.ComponentModel;
-using System.Text;
 using System.Windows.Input;
 
 namespace desViewModel
@@ -17,6 +16,7 @@ namespace desViewModel
         public bool Mode3 { get; set; }
         public string? EncryptFileName { get; set; } = "filename...";
         public string? DecryptFileName { get; set; } = "filename...";
+        public string? FilePath { get; set; }
         public string? EncryptText { get; set; } = "text...";
         public string? DecryptText { get; set; } = "text...";
         public string? Result { get; set; } = "Result...";
@@ -73,7 +73,6 @@ namespace desViewModel
                         {
                             inputString = DecryptText;
                         }
-                        //byte[] inputText = Encoding.BigEndianUnicode.GetBytes(inputString);
                         RunSelectedMode(mode: codingOption, inputText: inputString);
                     }
                     );
@@ -88,16 +87,12 @@ namespace desViewModel
                     (string codingOption) =>
                     {
                         ValidateInput(codingOption);
-                        string inputFilename = EncryptFileName;
-                        string filePrefix = "enc_";
-                        if (codingOption.StartsWith("DECRYPT"))
-                        {
-                            inputFilename = DecryptFileName;
-                            filePrefix = "dec_";
-                        }
-                        byte[] inputStream = FileToByteArray(inputFilename);
+
+                        GetPath();
+
+                        byte[] inputStream = FileToByteArray();
                         RunSelectedMode(mode: codingOption, bytes: inputStream);
-                        ByteArrayToFile(fileResult, inputFilename, filePrefix);
+                        ByteArrayToFile(fileResult, codingOption);
                     }
                     );
             }
@@ -105,9 +100,7 @@ namespace desViewModel
 
         private static string GenerateKey() => debug.toStr(debug.genKey());
         private static BitArray ToBitArray(string text) => debug.toBitArray(text);
-        private static byte[] ToBytes(BitArray[] bits) => conv.toBytes(bits);
         private static BitArray[] ToBlocks(byte[] bytes) => conv.toBlocks(bytes);
-        //private static string ToStr(BitArray[] bits) => Encoding.BigEndianUnicode.GetString(ToBytes(bits));
 
         private string GetSelectedMode()
         {
@@ -176,28 +169,22 @@ namespace desViewModel
                 OnPropertyChanged(nameof(Result));
             }
         }
-        private static byte[] FileToByteArray(string filename)
+        private byte[] FileToByteArray()
         {
-            string workingDirectory = Environment.CurrentDirectory;
-            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filename);
-
-            //using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
-            // {
-            byte[] bytes = File.ReadAllBytes(path);
-            //    fs.Read(bytes, 0, Convert.ToInt32(fs.Length));
-            //    fs.Close();
-            return bytes;
-            //}
+            return File.ReadAllBytes(FilePath);
         }
-        private static void ByteArrayToFile(byte[] array, string filename, string filePrefix)
+        private void ByteArrayToFile(byte[] array, string codingOption)
         {
-            string workingDirectory = Environment.CurrentDirectory;
-            string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, filePrefix + filename);
+            string path = FilePath.Substring(0, FilePath.LastIndexOf('\\')) + "\\";
+            if (codingOption.StartsWith("DECRYPT"))
+            {
+                path += DecryptFileName;
+            }
+            else
+            {
+                path += EncryptFileName;
+            }
             File.WriteAllBytes(path, array);
-            //using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
-            //{
-            //    fs.Write(array, 0, array.Length);
-            //}
         }
         private bool ValidateInput(object textBox)
         {
@@ -227,8 +214,6 @@ namespace desViewModel
                     break;
             }
 
-            string workingDirectory = Environment.CurrentDirectory;
-
             switch (textBox as string)
             {
                 case "ENCRYPT FILE":
@@ -236,22 +221,20 @@ namespace desViewModel
                     {
                         throw new ArgumentNullException("File name for encryption was null!");
                     }
-                    string path = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, EncryptFileName);
-                    if (!File.Exists(path))
-                    {
-                        throw new FileNotFoundException("File at specified path does not exits - " + path);
-                    }
+                    //if (!File.Exists(FilePath))
+                    //{
+                    //    throw new FileNotFoundException("File at specified path does not exits - " + FilePath);
+                    //}
                     break;
                 case "DECRYPT FILE":
                     if (string.IsNullOrEmpty(DecryptFileName))
                     {
                         throw new ArgumentNullException("File name for decryption was null!");
                     }
-                    string path2 = Path.Combine(Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName, DecryptFileName);
-                    if (!File.Exists(path2))
-                    {
-                        throw new FileNotFoundException("File at specified path does not exits - " + path2);
-                    }
+                    //if (!File.Exists(FilePath))
+                    //{
+                    //    throw new FileNotFoundException("File at specified path does not exits - " + FilePath);
+                    //}
                     break;
                 case "ENCRYPT TEXT":
                     if (string.IsNullOrEmpty(EncryptText))
@@ -268,6 +251,19 @@ namespace desViewModel
                     break;
             }
             return true;
+        }
+        public void GetPath()
+        {
+            var fileDialog = new OpenFileDialog()
+            {
+                Title = "Podaj ścieżkę pliku do enkrypcji/dekrypcji",
+                CheckFileExists = false,
+                CheckPathExists = false,
+            };
+            if (fileDialog.ShowDialog() == DialogResult.OK)
+            {
+                FilePath = fileDialog.FileName;
+            }
         }
     }
 }

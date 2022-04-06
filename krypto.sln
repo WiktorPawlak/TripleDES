@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "desView", "desView\desView.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "desUserInterface", "desUserInterface", "{BFBF79FF-3B4B-42CD-9E87-3C635A72CBCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "desViewModel", "desViewModel\desViewModel.csproj", "{A6D30FE6-4C02-42AC-98A1-867B0FE2024A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "desViewModel", "desViewModel\desViewModel.csproj", "{A6D30FE6-4C02-42AC-98A1-867B0FE2024A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
